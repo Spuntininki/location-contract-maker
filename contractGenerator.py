@@ -6,7 +6,7 @@ from reportlab.lib.units import inch
 
 
 
-def create_contract():
+def create_contract(owner_name, client_name):
     doc = SimpleDocTemplate("meu_contrato.pdf", pagesize=letter)
 
     # Defina os estilos para diferentes partes do contrato
@@ -33,8 +33,8 @@ def create_contract():
     title = Paragraph("CONTRATO DE LOCAÇÃO", style_title)
     content.append(title)
 
-    owner_name = 'Laurindo Figueiredo Moreira'
-    client_name = 'Fernando Leite Da Silva'
+    #owner_name = 'Laurindo Figueiredo Moreira'
+    #client_name = 'Fernando Leite Da Silva'
 
 
     paragraphs = [
@@ -109,4 +109,4 @@ def create_contract():
     doc.build(content)
 
 
-create_contract()
+#create_contract('Lucas Fonseca Moreira', 'Fernando Leite Da Silva')
