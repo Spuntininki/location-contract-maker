@@ -2,12 +2,37 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 from reportlab.lib.units import inch
+import re
+from entidades import PersonManipulator, addressManipulator, Owner, Renter
 
 
 
+def formatar_cpf(string_numeros):
+    
+    numeros = re.sub(r'\D', '', string_numeros)
+    
+    if len(numeros) != 11:
+        return "Formato inválido. A string deve conter 11 dígitos numéricos."
+    
+    cpf_formatado = f"{numeros[:3]}.{numeros[3:6]}.{numeros[6:9]}-{numeros[9:]}"
+    
+    return cpf_formatado
 
-def create_contract(owner_name, client_name):
+
+
+def create_contract(owner_id, renter_id, address_id):
     doc = SimpleDocTemplate("meu_contrato.pdf", pagesize=letter)
+
+    person_maker = PersonManipulator()
+    address_maker = addressManipulator()
+
+    owner = person_maker.get_person_by_id(Owner, owner_id)
+    renter = person_maker.get_person_by_id(Renter, renter_id)
+    address = address_maker.get_full_address_string(address_maker.get_address_by_id(address_id))
+
+
+    owner_cpf = formatar_cpf(owner.cpf)
+    renter_cpf = formatar_cpf(renter.cpf)
 
     # Defina os estilos para diferentes partes do contrato
     styles = getSampleStyleSheet()
@@ -36,12 +61,12 @@ def create_contract(owner_name, client_name):
     #owner_name = 'Laurindo Figueiredo Moreira'
     #client_name = 'Fernando Leite Da Silva'
 
-
-    paragraphs = [
-        f'<b>{owner_name.upper()}, (CPF) 251.428.875-49,</b> Cédula de identidade <b> 17.422.791-7</b> doravante denominado <b>LOCADOR(A)</b>',
-        f'<b>{client_name.upper()} (CPF) 589.693.494-72</b>, Cédula de identidade <b>27.087.120-2</b> doravante denominado <b>LOCATÁRIO(A)</b>',
+    #RUA SEBASTIÃO DA ROCHA PITA, Nº 168, CASA 2 – VILA NINA - SÃO PAULO – SP
+    paragraphs = [ 
+        f'<b>{owner.name.upper()}, (CPF) {owner_cpf},</b> Cédula de identidade <b> 17.422.791-7</b> doravante denominado <b>LOCADOR(A)</b>',
+        f'<b>{renter.name.upper()} (CPF) {renter_cpf}</b>, Cédula de identidade <b>27.087.120-2</b> doravante denominado <b>LOCATÁRIO(A)</b>',
         'Celebram o presente contrato de locação residencial, com as cláusulas e condições seguintes:',
-        'O <b>LOCADOR</b> cede para locação residencial ao <b>LOCATÁRIO</b>, um salão comercial, na <b>RUA SEBASTIÃO DA ROCHA PITA, Nº 168, CASA 2 – VILA NINA - SÃO PAULO – SP</b>. A locação destina-se ao uso exclusivo como residência e domicílio do <b>LOCATÁRIO</b>.',
+        f'O <b>LOCADOR</b> cede para locação residencial ao <b>LOCATÁRIO</b>, um salão comercial, na <b>{address}</b>. A locação destina-se ao uso exclusivo como residência e domicílio do <b>LOCATÁRIO</b>.',
         'O prazo de locação é de <b>02 (dois) anos</b>, iniciando-se em <b>20 de janeiro de 2023</b> e terminando em <b>20 de janeiro de 2025</b>, limite de tempo em que o imóvel objeto do presente deverá ser restituído independentemente de qualquer notificação ou interpelação sob pena de caracterizar infração contratual.',
         'O aluguel mensal será de <b>R$ 600,00 (Seiscentos reais)</b> e deverá ser pago até a data de seu vencimento, todo dia <b>20 de cada mês</b> do mês seguinte ao vencido, no local do endereço do <b>LOCADOR</b> ou outro que o mesmo venha a designar.',
         '<b>Obs. (foi dado um mês de depósito)</b>',
@@ -80,7 +105,7 @@ def create_contract(owner_name, client_name):
     data = [
         ["LOCATÁRIO", "LOCADOR"],
         ["______________________", "______________________"],
-        [owner_name, client_name],
+        [owner.name, renter.name],
         ["Data", "Data"]
     ]
 
