@@ -1,3 +1,6 @@
-from entidades import PersonManipulator, Owner
+import datetime
 
-print(PersonManipulator.get_persons(Owner))
+
+n1 = 100
+
+print(float(n1, ))

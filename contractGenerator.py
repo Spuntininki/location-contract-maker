@@ -4,7 +4,7 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, Tabl
 from reportlab.lib.units import inch
 import re
 from entidades import PersonManipulator, addressManipulator, Owner, Renter
-
+from datetime import datetime
 
 
 def formatar_cpf(string_numeros):
@@ -18,9 +18,45 @@ def formatar_cpf(string_numeros):
     
     return cpf_formatado
 
+def formatar_rg(string_numerica):
+    # Remover caracteres não numéricos da string
+    numeros = re.sub(r'\D', '', string_numerica)
+    
+    # Verificar se a string possui pelo menos 8 dígitos numéricos
+    if len(numeros) < 8:
+        return "Formato inválido. A string deve conter pelo menos 8 dígitos numéricos."
+    
+    # Formatar o RG com pontos e traços
+    rg_formatado = f"{numeros[:2]}.{numeros[2:5]}.{numeros[5:]}"
+    
+    return rg_formatado
 
+def get_full_date_description(string_date='', today=False):
+    
+    STRING_DESC_OF_MONTHS = {
+        1:'janeiro',
+        2:'fevereiro',
+        3: 'março',
+        4: 'abril',
+        5: 'maio',
+        6:'junho',
+        7:'julho',
+        8:'agosto',
+        9:'setembro',
+        10:'outubro',
+        11:'novembro',
+        12:'dezembro'
+        }
+    if not today:        
+        date = datetime.strptime(string_date, '%Y-%m-%d')
+        return f'{str(date.day).zfill(2)} de {str(STRING_DESC_OF_MONTHS[date.month]).zfill(2)} de {date.year}'
+    else:
+        date = datetime.now()
+        return f'{str(date.day).zfill(2)} de {str(STRING_DESC_OF_MONTHS[date.month]).zfill(2)} de {date.year}'
 
-def create_contract(owner_id, renter_id, address_id):
+    
+
+def create_contract(owner_id, renter_id, address_id, start_date, end_date):
     doc = SimpleDocTemplate("meu_contrato.pdf", pagesize=letter)
 
     person_maker = PersonManipulator()
@@ -30,9 +66,13 @@ def create_contract(owner_id, renter_id, address_id):
     renter = person_maker.get_person_by_id(Renter, renter_id)
     address = address_maker.get_full_address_string(address_maker.get_address_by_id(address_id))
 
-
     owner_cpf = formatar_cpf(owner.cpf)
+    owner_rg = formatar_rg(owner.rg)
     renter_cpf = formatar_cpf(renter.cpf)
+    renter_rg = formatar_rg(renter.rg)
+
+    start_date_string_description = get_full_date_description(start_date)
+    end_date_string_description = get_full_date_description(end_date)
 
     # Defina os estilos para diferentes partes do contrato
     styles = getSampleStyleSheet()
@@ -63,11 +103,11 @@ def create_contract(owner_id, renter_id, address_id):
 
     #RUA SEBASTIÃO DA ROCHA PITA, Nº 168, CASA 2 – VILA NINA - SÃO PAULO – SP
     paragraphs = [ 
-        f'<b>{owner.name.upper()}, (CPF) {owner_cpf},</b> Cédula de identidade <b> 17.422.791-7</b> doravante denominado <b>LOCADOR(A)</b>',
-        f'<b>{renter.name.upper()} (CPF) {renter_cpf}</b>, Cédula de identidade <b>27.087.120-2</b> doravante denominado <b>LOCATÁRIO(A)</b>',
+        f'<b>{owner.nome.upper()}, (CPF) {owner_cpf},</b> Cédula de identidade <b>{owner_rg}</b> doravante denominado <b>LOCADOR(A)</b>',
+        f'<b>{renter.nome.upper()} (CPF) {renter_cpf}</b>, Cédula de identidade <b>{renter_rg}</b> doravante denominado <b>LOCATÁRIO(A)</b>',
         'Celebram o presente contrato de locação residencial, com as cláusulas e condições seguintes:',
         f'O <b>LOCADOR</b> cede para locação residencial ao <b>LOCATÁRIO</b>, um salão comercial, na <b>{address}</b>. A locação destina-se ao uso exclusivo como residência e domicílio do <b>LOCATÁRIO</b>.',
-        'O prazo de locação é de <b>02 (dois) anos</b>, iniciando-se em <b>20 de janeiro de 2023</b> e terminando em <b>20 de janeiro de 2025</b>, limite de tempo em que o imóvel objeto do presente deverá ser restituído independentemente de qualquer notificação ou interpelação sob pena de caracterizar infração contratual.',
+        f'O prazo de locação é de <b>02 (dois) anos</b>, iniciando-se em <b>{start_date_string_description}</b> e terminando em <b>{end_date_string_description}</b>, limite de tempo em que o imóvel objeto do presente deverá ser restituído independentemente de qualquer notificação ou interpelação sob pena de caracterizar infração contratual.',
         'O aluguel mensal será de <b>R$ 600,00 (Seiscentos reais)</b> e deverá ser pago até a data de seu vencimento, todo dia <b>20 de cada mês</b> do mês seguinte ao vencido, no local do endereço do <b>LOCADOR</b> ou outro que o mesmo venha a designar.',
         '<b>Obs. (foi dado um mês de depósito)</b>',
         'A impontualidade acarretará juros moratórios na base de 1% (um por cento) ao mês calculado sobre o valor do aluguel. O atraso superior a 30 (trinta) dias implicará em correção monetária do valor do aluguel e encargos de cobrança correspondentes a 10% (dez por cento) do valor assim corrigido.'
@@ -89,7 +129,7 @@ def create_contract(owner_id, renter_id, address_id):
         'No caso do imóvel ser posto à venda, o <b>LOCATÁRIO</b> declara que não possui interesse em sua aquisição, renunciando expressamente ao eventual direito de preferência e autoriza desde já, a visita de interessados, em horários previamente convencionados.',
         'O <b>LOCATÁRIO</b> declara, para todos os fins e efeitos de direito, que recebe o imóvel locado em condições plenas de uso, em perfeito estado de conservação, higiene e limpeza, obrigando-se e comprometendo-se a devolvê-lo em iguais condições, independentemente de qualquer aviso ou notificação prévia, e qualquer que seja o motivo da devolução, sob pena de incorrer nas cominações previstas neste contrato ou estipuladas em lei, além da obrigação de indenizar por danos ou prejuízos decorrentes da inobservância desta obrigação, salvo as deteriorações decorrentes de uso normal do imóvel.',
         'Elegem as partes o foro do domicílio do <b>LOCADOR</b>, para dirimir quaisquer dúvidas oriundas do presente contrato, renunciando a qualquer outro por mais privilegiado que seja.',
-        '<b>São Paulo, 17 de janeiro de 2023</b>'
+        f'<b>São Paulo, {get_full_date_description(today=True)}</b>'
     
 
         ]
@@ -105,7 +145,7 @@ def create_contract(owner_id, renter_id, address_id):
     data = [
         ["LOCATÁRIO", "LOCADOR"],
         ["______________________", "______________________"],
-        [owner.name, renter.name],
+        [owner.nome, renter.nome],
         ["Data", "Data"]
     ]
 
