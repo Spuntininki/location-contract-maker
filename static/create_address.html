@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Cadastrar novo endereço</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+    <script src='main.js'></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+
+        form {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+
+    <form action="https://localhost:8000/create-person" method="POST">
+        <h1 style="padding: 10px;">Cadastrar endereço</h1>
+        <div class="form-group">
+            <label for="cep">CEP</label>
+            <input type="text" name="cep" id="cep" required />
+        </div>
+
+        <div class="form-group">
+            <label for="endereco">Endereço</label>
+            <input type="text" name="endereco" id="endereco" required />
+        </div>
+
+        <div class="form-group">
+            <label for="complemento">Complemento</label>
+            <input type="text" name="complemento" id="complemento" />
+        </div>
+
+        <div class="form-group">
+            <label for="numero">Número</label>
+            <input type="text" name="numero" id="numero" required />
+        </div>
+
+        <div class="form-group">
+            <label for="bairro">Bairro</label>
+            <input type="text" name="bairro" id="bairro" required />
+        </div>
+
+        <div class="form-group">
+            <label for="cidade">Cidade</label>
+            <input type="text" name="cidade" id="cidade" required />
+        </div>
+
+        <div class="form-group">
+            <label for="estado">Estado</label>
+            <input type="text" name="estado" id="estado" required />
+        </div>
+
+        <button type="submit">Salvar</button>
+    </form>
+</body>
+<script>
+    document.getElementById('cep').addEventListener('blur', buscarEndereco);
+
+    function buscarEndereco() {
+        var cep = document.getElementById('cep').value;
+
+        // Realize uma solicitação GET à API dos Correios
+        fetch(`https://viacep.com.br/ws/${cep}/json/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.erro) {
+                    alert('CEP não encontrado');
+                } else {
+                    document.getElementById('endereco').value = data.logradouro;
+                    document.getElementById('complemento').value = data.complemento;
+                    document.getElementById('bairro').value = data.bairro;
+                    document.getElementById('cidade').value = data.localidade;
+                    document.getElementById('estado').value = data.uf;
+                }
+            })
+            .catch(error => {
+                console.error('Erro na solicitação:', error);
+            });
+    }
+</script>
+
+</html>

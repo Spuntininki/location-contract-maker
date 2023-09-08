@@ -54,9 +54,9 @@ class addressManipulator:
 
 
     @staticmethod
-    def create_address(address_name, address_number, complement, neighborhood, city, state):
+    def create_address(address_name, address_number, complement, neighborhood, city, state, cep):
         address = Address(Address_name=address_name, Address_number=address_number, complement=complement, \
-                         neighborhood=neighborhood, city=city, state=state)
+                         neighborhood=neighborhood, city=city, state=state, cep=cep)
         session.add(address)
         session.commit()
         return address
@@ -120,6 +120,7 @@ class Address(Base):
     neighborhood = Column(String)
     city = Column(String)
     state = Column(String)
+    cep = Column(String)
 
     
     
@@ -131,3 +132,5 @@ class Address(Base):
 Base.metadata.create_all(engine)
 #print(addressManipulator().get_full_address_string(addressManipulator().create_address(address_name='Rua Osman da costa Pino', address_number=44, complement='casa 2', neighborhood='Jardim Carumbé', city='São Paulo', state='SP')))
 #print(PersonManipulator.create_person(Renter, nome='Billy', cpf='123', rg='123'))
+#addressManipulator().create_address(address_name='Rua Sebastião da Rocha pita', address_number=168, complement='casa 7', neighborhood='Vila nina', city='São Paulo', state='SP')
+#PersonManipulator.create_person(Owner, nome='Laurindo Figueiredo Moreira', cpf='25142887549', rg='174227917')
