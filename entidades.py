@@ -131,6 +131,7 @@ class Contract(Base):
     start_date = Column(Date)
     end_date = Column(Date)
     created_date = Column(DateTime)
+
     # Define a relação com as tabelas Renter e Address
     owner = relationship('Owner', back_populates='contracts')
     renter = relationship('Renter', back_populates='contracts')
