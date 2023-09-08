@@ -28,6 +28,7 @@ def formatar_rg(string_numerica):
     
     # Formatar o RG com pontos e traços
     rg_formatado = f"{numeros[:2]}.{numeros[2:5]}.{numeros[5:8]}-{numeros[8]}"
+    rg_formatado = f"{numeros[:2]}.{numeros[2:5]}.{numeros[5:8]}-{numeros[8]}"
     
     return rg_formatado
 
@@ -53,6 +54,51 @@ def get_full_date_description(string_date='', today=False):
     else:
         date = datetime.now()
         return f'{str(date.day).zfill(2)} de {str(STRING_DESC_OF_MONTHS[date.month]).zfill(2)} de {date.year}'
+
+def numero_por_extenso(numero):
+    unidades = ['zero', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove']
+    especiais = ['dez', 'onze', 'doze', 'treze', 'catorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove']
+    dezenas = ['vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa']
+    centenas = ['cem', 'cento', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos', 'seiscentos', 'setecentos', 'oitocentos', 'novecentos']
+    milhares = ['mil', 'milhão', 'bilhão', 'trilhão', 'quatrilhão', 'quintilhão', 'sextilhão', 'septilhão', 'octilhão', 'nonilhão', 'decilhão', 'undecilhão', 'dodecilhão']
+    
+    numero = int(numero)
+    if numero >= 0 and numero < 10:
+        return unidades[numero]
+    elif numero >= 10 and numero < 20:
+        return especiais[numero - 10]
+    elif numero >= 20 and numero < 100:
+        dezena = dezenas[numero // 10 - 2]
+        unidade = unidades[numero % 10]
+        if numero % 10 == 0:
+            return dezena
+        else:
+            return f"{dezena} e {unidade}"
+    elif numero >= 100 and numero < 1000:
+        centena = centenas[numero // 100]
+        dezena = numero % 100
+        if dezena == 0:
+            return centena
+        else:
+            return f"{centena} e {numero_por_extenso(dezena)}"
+    elif numero >= 1000 and numero < 1_000_000:
+        n = str(numero)
+        tamanho = len(n)
+        if tamanho % 3 != 0:
+            n = n.zfill(tamanho + (3 - (tamanho % 3)))
+            tamanho = len(n)
+        parte_extenso = []
+        for i in range(0, tamanho, 3):
+            segmento = int(n[i:i+3])
+            if segmento != 0:
+                extenso = numero_por_extenso(segmento)
+                if i != 0:
+                    extenso = f"{extenso} {milhares[i//3]}"
+                parte_extenso.append(extenso)
+        return ", ".join(parte_extenso)
+
+    return "Número não suportado"
+
 
     
 
@@ -117,7 +163,7 @@ def create_contract(owner_id, renter_id, address_id, start_date, end_date):
         'Nas cobranças judiciais e extrajudiciais de alugueis em atraso os mesmos serão acrescidos de juros de mora, atualização monetária e honorários advocatícios, na base de 20% ( vinte por cento ) sendo que qualquer recebimento feitos pela <b>LOCADOR</b> fora dos prazos e condições convencionais neste contrato, será havido como mera tolerância e não induzirá novação bem como resgate de recibos posteriores não significará quitação de aluguéis e outras obrigações contratuais deixadas de quitar nas épocas certas.',
         'O imóvel da presente locação destina-se ao uso exclusivo como residência e domicilio do <b>LOCATÁRIO</b>, conforme cláusula 2, não sendo permitida a transferência, sublocação, cessão ou empréstimo no todo ou em parte, sem a prévia e expressa autorização do <b>LOCADOR</b>.',
         'Além do aluguel são de responsabilidade do <b>LOCATÁRIO</b> as despesas com consumo de luz, água, esgoto, seguro contra incêndio, imposto predial e todas as demais taxas ou impostos, tributos municipais e encargos da locação, que venham a incidir sobre o imóvel, inclusive taxa de condomínio, que deverão ser pagas diretamente pela mesma, o qual ficará obrigada a apresentar os comprovantes de quitação juntamente com o pagamento do aluguel.',
-        'O <b>LOCATÁRIO</b> declara neste ato tomar conhecimento da existência de regras estabelecidas na CONVENÇÃO DE CONDOMÍNIOS e compromete-se a respeitá-las e cumpri-las, juntamente com seus familiares e prepostos, sob pena de rescisão contratual.',
+        'O <b>LOCATÁRIO</b> declara neste ato tomar conhecimento da existência de regras estabelecidas na <b>CONVENÇÃO DE CONDOMÍNIOS</b> e compromete-se a respeitá-las e cumpri-las, juntamente com seus familiares e prepostos, sob pena de rescisão contratual.',
         'Encerrada a locação a entrega das chaves só será processada mediante exibição ao <b>LOCADOR</b>, dos comprovantes de quitação das despesas e encargos da locação referidos nas cláusulas anteriores, inclusive corte final de luz.',
         'Fica facultado ao <b>LOCADOR</b> ou ao seu representante legal vistoriar o imóvel sempre que julgar necessário.',
         'O <b>LOCATÁRIO</b> se obriga, sob pena de cometer infração contratual, a comunicar por escrito ao <b>LOCADOR</b>, com antecipação mínima de 30 (trinta) dias, a sua intenção de devolver o imóvel antes do prazo aqui previsto.',
@@ -146,7 +192,7 @@ def create_contract(owner_id, renter_id, address_id, start_date, end_date):
         ["LOCATÁRIO", "LOCADOR"],
         ["______________________", "______________________"],
         [owner.nome, renter.nome],
-        [get_full_date_description(today=True), get_full_date_description(today=True)]
+        ["Data", "Data"]
     ]
 
     style = TableStyle([
@@ -154,7 +200,7 @@ def create_contract(owner_id, renter_id, address_id, start_date, end_date):
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, -1), 12),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
-        ('TOPPADDING', (0, 0), (-1, -1), 12),
+        ('TOPPADDING', (0, 0), (-1, -1), 20),
         #('BACKGROUND', (0, 0), (-1, 0), '#DDDDDD'),
         ('TEXTCOLOR', (0, 0), (-1, 0), '#000000'),
         #('BACKGROUND', (0, 1), (-1, -1), '#EEEEEE'),
