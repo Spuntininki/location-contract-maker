@@ -27,7 +27,7 @@ def formatar_rg(string_numerica):
         return "Formato inválido. A string deve conter pelo menos 8 dígitos numéricos."
     
     # Formatar o RG com pontos e traços
-    rg_formatado = f"{numeros[:2]}.{numeros[2:5]}.{numeros[5:]}"
+    rg_formatado = f"{numeros[:2]}.{numeros[2:5]}.{numeros[5:8]}-{numeros[8]}"
     
     return rg_formatado
 
@@ -108,7 +108,7 @@ def create_contract(owner_id, renter_id, address_id, start_date, end_date):
         'Celebram o presente contrato de locação residencial, com as cláusulas e condições seguintes:',
         f'O <b>LOCADOR</b> cede para locação residencial ao <b>LOCATÁRIO</b>, um salão comercial, na <b>{address}</b>. A locação destina-se ao uso exclusivo como residência e domicílio do <b>LOCATÁRIO</b>.',
         f'O prazo de locação é de <b>02 (dois) anos</b>, iniciando-se em <b>{start_date_string_description}</b> e terminando em <b>{end_date_string_description}</b>, limite de tempo em que o imóvel objeto do presente deverá ser restituído independentemente de qualquer notificação ou interpelação sob pena de caracterizar infração contratual.',
-        'O aluguel mensal será de <b>R$ 600,00 (Seiscentos reais)</b> e deverá ser pago até a data de seu vencimento, todo dia <b>20 de cada mês</b> do mês seguinte ao vencido, no local do endereço do <b>LOCADOR</b> ou outro que o mesmo venha a designar.',
+        'O aluguel mensal será de <b>R$ 600,00 (Seiscentos reais)</b> e deverá ser pago até a data de seu vencimento, todo dia <b>30 de cada mês</b> do mês seguinte ao vencido, no local do endereço do <b>LOCADOR</b> ou outro que o mesmo venha a designar.',
         '<b>Obs. (foi dado um mês de depósito)</b>',
         'A impontualidade acarretará juros moratórios na base de 1% (um por cento) ao mês calculado sobre o valor do aluguel. O atraso superior a 30 (trinta) dias implicará em correção monetária do valor do aluguel e encargos de cobrança correspondentes a 10% (dez por cento) do valor assim corrigido.'
         'O pagamento de qualquer dos aluguéis não implica em renúncia do direito de cobrança de eventuais diferenças de aluguéis, de encargos ou impostos que oportunamente não tiverem sidos lançados nos respectivos recibos.',
@@ -146,7 +146,7 @@ def create_contract(owner_id, renter_id, address_id, start_date, end_date):
         ["LOCATÁRIO", "LOCADOR"],
         ["______________________", "______________________"],
         [owner.nome, renter.nome],
-        ["Data", "Data"]
+        [get_full_date_description(today=True), get_full_date_description(today=True)]
     ]
 
     style = TableStyle([
@@ -174,4 +174,4 @@ def create_contract(owner_id, renter_id, address_id, start_date, end_date):
     doc.build(content)
 
 
-#create_contract('Lucas Fonseca Moreira', 'Fernando Leite Da Silva')
+
