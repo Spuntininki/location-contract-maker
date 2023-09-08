@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
-from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import declarative_base, sessionmaker, relationship
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, DateTime
 
 # Cria uma instância do engine para o banco de dados SQLite
 
@@ -122,7 +122,19 @@ class Address(Base):
     state = Column(String)
     cep = Column(String)
 
-    
+class Contract(Base):
+    __tablename__ = 'contract'
+    id = Column(Integer, primary_key=True)
+    owner_id = Column(Integer, ForeignKey('Owner.id'))
+    renter_id = Column(Integer, ForeignKey('Renter.id'))
+    address_id = Column(Integer, ForeignKey('Address.id'))
+    start_date = Column(Date)
+    end_date = Column(Date)
+    created_date = Column(DateTime)
+    # Define a relação com as tabelas Renter e Address
+    owner = relationship('Owner', back_populates='contracts')
+    renter = relationship('Renter', back_populates='contracts')
+    address = relationship('Address', back_populates='contracts')    
     
 
 
