@@ -7,7 +7,7 @@ from entidades import PersonManipulator, addressManipulator, Owner, Renter
 from datetime import datetime
 
 
-def formatar_cpf(string_numeros):
+def cpf_formatter(string_numeros):
     
     numeros = re.sub(r'\D', '', string_numeros)
     
@@ -18,7 +18,7 @@ def formatar_cpf(string_numeros):
     
     return cpf_formatado
 
-def formatar_rg(string_numerica):
+def rg_formatter(string_numerica):
     # Remover caracteres não numéricos da string
     numeros = re.sub(r'\D', '', string_numerica)
     
@@ -55,7 +55,7 @@ def get_full_date_description(string_date='', today=False):
         date = datetime.now()
         return f'{str(date.day).zfill(2)} de {str(STRING_DESC_OF_MONTHS[date.month]).zfill(2)} de {date.year}'
 
-def numero_por_extenso(numero):
+def number_to_string_description_pt_br(numero):
     unidades = ['zero', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove']
     especiais = ['dez', 'onze', 'doze', 'treze', 'catorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove']
     dezenas = ['vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa']
@@ -80,7 +80,7 @@ def numero_por_extenso(numero):
         if dezena == 0:
             return centena
         else:
-            return f"{centena} e {numero_por_extenso(dezena)}"
+            return f"{centena} e {number_to_string_description_pt_br(dezena)}"
     elif numero >= 1000 and numero < 1_000_000:
         n = str(numero)
         tamanho = len(n)
@@ -91,7 +91,7 @@ def numero_por_extenso(numero):
         for i in range(0, tamanho, 3):
             segmento = int(n[i:i+3])
             if segmento != 0:
-                extenso = numero_por_extenso(segmento)
+                extenso = number_to_string_description_pt_br(segmento)
                 if i != 0:
                     extenso = f"{extenso} {milhares[i//3]}"
                 parte_extenso.append(extenso)
@@ -102,7 +102,7 @@ def numero_por_extenso(numero):
 
     
 
-def create_contract(owner_id, renter_id, address_id, start_date, end_date):
+def create_contract(owner_id, renter_id, address_id, start_date, end_date, due_day, value):
     doc = SimpleDocTemplate("meu_contrato.pdf", pagesize=letter)
 
     person_maker = PersonManipulator()
@@ -112,13 +112,15 @@ def create_contract(owner_id, renter_id, address_id, start_date, end_date):
     renter = person_maker.get_person_by_id(Renter, renter_id)
     address = address_maker.get_full_address_string(address_maker.get_address_by_id(address_id))
 
-    owner_cpf = formatar_cpf(owner.cpf)
-    owner_rg = formatar_rg(owner.rg)
-    renter_cpf = formatar_cpf(renter.cpf)
-    renter_rg = formatar_rg(renter.rg)
+    owner_cpf = cpf_formatter(owner.cpf)
+    owner_rg = rg_formatter(owner.rg)
+    renter_cpf = cpf_formatter(renter.cpf)
+    renter_rg = rg_formatter(renter.rg)
 
     start_date_string_description = get_full_date_description(start_date)
     end_date_string_description = get_full_date_description(end_date)
+
+    value_string_description = number_to_string_description_pt_br(value)
 
     # Defina os estilos para diferentes partes do contrato
     styles = getSampleStyleSheet()
@@ -154,7 +156,7 @@ def create_contract(owner_id, renter_id, address_id, start_date, end_date):
         'Celebram o presente contrato de locação residencial, com as cláusulas e condições seguintes:',
         f'O <b>LOCADOR</b> cede para locação residencial ao <b>LOCATÁRIO</b>, um salão comercial, na <b>{address}</b>. A locação destina-se ao uso exclusivo como residência e domicílio do <b>LOCATÁRIO</b>.',
         f'O prazo de locação é de <b>02 (dois) anos</b>, iniciando-se em <b>{start_date_string_description}</b> e terminando em <b>{end_date_string_description}</b>, limite de tempo em que o imóvel objeto do presente deverá ser restituído independentemente de qualquer notificação ou interpelação sob pena de caracterizar infração contratual.',
-        'O aluguel mensal será de <b>R$ 600,00 (Seiscentos reais)</b> e deverá ser pago até a data de seu vencimento, todo dia <b>30 de cada mês</b> do mês seguinte ao vencido, no local do endereço do <b>LOCADOR</b> ou outro que o mesmo venha a designar.',
+        f'O aluguel mensal será de <b>R$ {value},00 ({value_string_description})</b> e deverá ser pago até a data de seu vencimento, todo dia <b>{due_day} de cada mês</b> do mês seguinte ao vencido, no local do endereço do <b>LOCADOR</b> ou outro que o mesmo venha a designar.',
         '<b>Obs. (foi dado um mês de depósito)</b>',
         'A impontualidade acarretará juros moratórios na base de 1% (um por cento) ao mês calculado sobre o valor do aluguel. O atraso superior a 30 (trinta) dias implicará em correção monetária do valor do aluguel e encargos de cobrança correspondentes a 10% (dez por cento) do valor assim corrigido.'
         'O pagamento de qualquer dos aluguéis não implica em renúncia do direito de cobrança de eventuais diferenças de aluguéis, de encargos ou impostos que oportunamente não tiverem sidos lançados nos respectivos recibos.',
@@ -192,7 +194,6 @@ def create_contract(owner_id, renter_id, address_id, start_date, end_date):
         ["LOCATÁRIO", "LOCADOR"],
         ["______________________", "______________________"],
         [owner.nome, renter.nome],
-        ["Data", "Data"]
     ]
 
     style = TableStyle([

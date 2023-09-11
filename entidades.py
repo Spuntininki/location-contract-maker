@@ -104,6 +104,8 @@ class Owner(Base):
     cpf = Column(String)
     rg = Column(String)
 
+    Contract = relationship('Contract', back_populates='Owner')
+
 class Renter(Base):
     __tablename__ = 'Renter'
     id = Column(Integer, primary_key=True)
@@ -111,6 +113,7 @@ class Renter(Base):
     cpf = Column(String)
     rg = Column(String)
 
+    Contract = relationship('Contract', back_populates='Renter')
 class Address(Base):
     __tablename__ = 'Address'
     id = Column(Integer, primary_key=True)
@@ -121,6 +124,8 @@ class Address(Base):
     city = Column(String)
     state = Column(String)
     cep = Column(String)
+
+    Contract = relationship('Contract', back_populates='Address')
 
 class Contract(Base):
     __tablename__ = 'contract'
@@ -133,9 +138,9 @@ class Contract(Base):
     created_date = Column(DateTime)
 
     # Define a relação com as tabelas Renter e Address
-    owner = relationship('Owner', back_populates='contracts')
-    renter = relationship('Renter', back_populates='contracts')
-    address = relationship('Address', back_populates='contracts')    
+    Owner = relationship('Owner', back_populates='Contract')
+    Renter = relationship('Renter', back_populates='Contract')
+    Address = relationship('Address', back_populates='Contract')    
     
 
 
